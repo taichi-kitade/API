@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.webrtc.ecl.ntt.com/skyway-4.4.3.js"></script>
+    <link rel="icon" href="./images/favicon.ico">
+    <title>skyway api</title>
+</head>
+<input>
+    <div>
+        <video id="my-video" width="400px" autoplay playsinline></video>
+        <p id="my-id"></p>
+    </div>
+    <div>
+        
+        <input id="their-id">
+        <button id="make-call">発信</button>
+        <video id="their-video" width="400px" autoplay playsinline></video>
+    </div>
+
+
+<script>
+    // 630d9589-02ec-4d72-bbc6-32fcb7fbcccb
+    let localStream;
+
+    // カメラ映像取得
+    navigator.mediaDevices.getUserMedia({video:true, audio:true})
+    .then( stream =>{
+        // 成功時にビデオ要素にカメラ映像をセット＋再生
+        const videoElm = document.getElementById("my-video");
+        videoElm.srcObject = stream;
+        videoElm.play();
+        // 着信時に相手にカメラ映像を返せるように、グローバル変数を保存
+        localStream = stream;
+    }).catch( error =>{
+        // 失敗時にエラーログを出力
+        console.error('madiaDevice.getUserMedia() error', error)
+        return;
+    });
+
+    // peer作成
+    const peer = new Peer({
+        key: '4fc3261a-edab-4de9-8f02-181a86149689',
+        debug: 3
+    });
+
+    // peerID取得
+    peer.on('open',()=>{
+        document.getElementById('my-id').textContent = peer.id;
+    });
+
+    // 発信処理
+    document.getElementById('make-call').onclick = () =>{
+        const theirID = document.getElementById('their-id').value;
+        const mediaConnection = peer.call(theirID, localStream);
+        setEventListener(mediaConnection)
+    }
+
+    // イベントリスナを設置
+    const setEventListener = mediaConnection =>{
+        mediaConnection.on('stream',stream => {
+            const videoElm = document.getElementById('their-video')
+            videoElm.srcObject = stream;
+            videoElm.play();
+        });
+    }
+
+    // 着信処理
+    peer.on('call', mediaConnection=>{
+        mediaConnection.answer(localStream);
+        setEventListener(mediaConnection);
+    })
+
+</script>
+</body>
+
+
+</html>

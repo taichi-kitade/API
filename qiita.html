@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Qiita API</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div class="container">
+  <div class="search_area">
+    <div id="logo" class="logo"><img src="./images/logo.png" class="logo_image"></div>
+    <input type="text" id="search_text" class="search_text">
+    <button id="search_button" class="search_button">検索</button>
+    <div id="loading" style="display: none;"><img src="./images/circle.gif" class="loading_icon"></div>
+  <div id="result"></div>
+  </div>
+  <div class="search_area">
+    <div id="logo2" class="logo"><img src="./images/Google_Books_logo_2015.png" class="logo_image"></div>
+    <input type="text" id="search_text2" class="search_text">
+    <button id="search_button2" class="search_button">検索</button>
+    <div id="loading2" style="display: none;"><img src="./images/circle.gif" class="loading_icon"></div>
+  <div id="result2"></div>
+  </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  // da85d8f2e886ae3c55c44973d9566329b32c5933
+  $("#search_button").on("click", function() {
+    
+    let searchText = $("#search_text").val();
+    let token = "da85d8f2e886ae3c55c44973d9566329b32c5933"
+    
+    $("#loading").css("display","block");
+
+    axios.get(`https://qiita.com/api/v2/items?page=1&per_page=20&query=tag:${searchText}`,{
+      headers:{
+        Authorization : `Bearer ${token}`,
+      }
+    })
+    .then(function(response){
+    let data = response.data;
+    let str = "";
+    for(let i = 0 ; i <data.length; i++){
+      str += `<a href="${data[i].url}" target="_blank">${data[i].title}</a><br>`
+    }
+    console.log(response.data)
+    console.log(str)
+    $("#loading").css("display","none");
+    $("#result").html(str);
+    }).catch(function(){
+      console.log("ng")
+    })
+
+
+  });
+
+
+  $("#search_button2").on("click", function() {
+    
+    let searchText2 = $("#search_text2").val();
+    console.log(searchText2)
+    $("#loading2").css("display","block");
+    $.getJSON(
+        `https://www.googleapis.com/books/v1/volumes?q=${searchText2}`,
+        function(data){
+        console.log(data);
+        // let title = "";
+        // let link = "";
+        let str2 = "";
+        for (let i = 0; i < data.items.length; i++) {
+            // let item = data.items[i];
+            // title += item.volumeInfo.title;
+            // link += item.volumeInfo.canonicalVolumeLink;
+            
+            // console.log(title)
+            str2 += `<a href="${data.items[i].volumeInfo.canonicalVolumeLink}" target="_blank">${data.items[i].volumeInfo.title}</a><br>`
+            console.log(data.items[i].volumeInfo.title);
+            console.log(data.items[i].volumeInfo.canonicalVolumeLink);
+        };
+            $("#loading2").css("display","none");
+            $("#result2").html(str2);
+            // $("#result2").html(link);
+        }
+        
+
+        
+    );
+  });
+</script>
+</body>
+</html>
